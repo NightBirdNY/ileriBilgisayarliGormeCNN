@@ -1,0 +1,15 @@
+# PyTorch ve Torchvision için resmi sitesinden
+# size uygun CUDA komutunu çalıştırın:
+# Örnek (CUDA 12.1):
+# pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# Kullanılan versiyon CUDA 13.0
+
+# ---- Diğer kütüphaneler ----
+timm
+tensorboard
+scikit-learn
+matplotlib
+seaborn
+numpy
+tqdm
+kagglehub
