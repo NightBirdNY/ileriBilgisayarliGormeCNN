@@ -1,5 +1,5 @@
 import kagglehub
-
+# Checking dataset
 try:
     path = kagglehub.dataset_download("msambare/fer2013")
     print(f"Başarılı! İndirilen yol: {path}")
