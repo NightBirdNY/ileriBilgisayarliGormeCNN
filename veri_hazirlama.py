@@ -1,4 +1,4 @@
-# veri_hazirlama.py (Yeni Sürüm)
+# veri_hazirlama.py (GÜNCEL - Dinamik Boyutlu)
 
 import torch
 import kagglehub
@@ -6,35 +6,35 @@ import os
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-# 1. Transformları Tanımlama
-# SOTA modeller (ResNet, VGG) genellikle 3 kanallı (RGB) girdi bekler.
-# transforms.Grayscale ile gri görüntüyü 3 kanala kopyalayacağız.
-train_transform = transforms.Compose([
-    transforms.Grayscale(num_output_channels=3),  # SOTA modeller için
-    transforms.Resize((224,224)),
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomRotation(10),
-    #transforms.RandomCrop(48, padding=4),
-    transforms.ToTensor(),
-    transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))  # 3 kanal için
-])
 
-test_transform = transforms.Compose([
-    transforms.Grayscale(num_output_channels=3),  # SOTA modeller için
-    transforms.Resize((224,224)),
-    transforms.ToTensor(),
-    transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))  # 3 kanal için
-])
-
-
-# 2. Ana Fonksiyon
-def get_dataloaders(batch_size=64):
+# Fonksiyona 'image_size' parametresi ekliyoruz.
+# Varsayılan 224, böylece eski kodların bozulmadan çalışır.
+def get_dataloaders(batch_size=64, image_size=224):
     """
-    Veri setini indirir, hazırlar ve DataLoader'ları döndürür.
-    ImageFolder kullanarak train/test klasörlerinden okur.
+    Veri setini indirir ve istenen boyutta (image_size) DataLoader'ları döndürür.
+    InceptionV3 için image_size=299, diğerleri için 224 kullanılmalı.
     """
-    print("KaggleHub'dan veri seti yolu alınıyor...")
+
+    # Transformları dinamik boyuta göre ayarlıyoruz
+    train_transform = transforms.Compose([
+        transforms.Grayscale(num_output_channels=3),
+        transforms.Resize((image_size, image_size)),  # <-- Burası artık dinamik
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(10),
+        transforms.ToTensor(),
+        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+    ])
+
+    test_transform = transforms.Compose([
+        transforms.Grayscale(num_output_channels=3),
+        transforms.Resize((image_size, image_size)),  # <-- Burası artık dinamik
+        transforms.ToTensor(),
+        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+    ])
+
+    print(f"KaggleHub'dan veri seti yolu alınıyor... (Hedef Boyut: {image_size}x{image_size})")
     # Veri setini indir bul ve yolunu al
+    # (Kagglehub zaten indirdiyse tekrar indirmez, yolu verir)
     dataset_path = kagglehub.dataset_download("msambare/fer2013")
 
     # train ve test yollarını belirliyoruz
@@ -45,7 +45,6 @@ def get_dataloaders(batch_size=64):
     print(f"Test verisi buradan okunacak: {test_dir}")
 
     # 1. Dataset nesnelerini oluştur
-    # ImageFolder, alt klasörleri otomatik olarak sınıf olarak tanır
     train_dataset = datasets.ImageFolder(
         root=train_dir,
         transform=train_transform
@@ -74,7 +73,7 @@ def get_dataloaders(batch_size=64):
         num_workers=4
     )
 
-    # 3. Sınıf sayısını al (ImageFolder bunu otomatik sağlar)
+    # 3. Sınıf sayısını al
     num_classes = len(train_dataset.classes)
     print(f"Bulunan sınıflar: {train_dataset.classes}")
     print(f"Toplam sınıf sayısı: {num_classes}")

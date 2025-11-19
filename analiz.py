@@ -45,15 +45,21 @@ def get_predictions(model, loader):
 for model_adi in model_listesi:
     print(f"\n--- Analiz Ediliyor: {model_adi} ---")
 
-    # Modeli yeniden oluştur
+    # --- BOYUT AYARI ---
+    if model_adi == "inception_v3":
+        hedef_boyut = 299
+    else:
+        hedef_boyut = 224
+
+    # get_dataloaders'ı doğru boyutla çağırıyoruz
+    # Sadece test loader lazım
+    _, test_loader, NUM_CLASSES = get_dataloaders(batch_size=BATCH_SIZE, image_size=hedef_boyut)
+
+    # Modeli yeniden oluştur ve Yükle
     if model_adi == "teloCNN":
         model = teloCNN(num_classes=NUM_CLASSES)
     else:
-        # Inception'ı eval modunda aux_logits=False ile yükleyebiliriz
-        if model_adi == "inception_v3":
-            model = get_model(model_adi, num_classes=NUM_CLASSES)
-        else:
-            model = get_model(model_adi, num_classes=NUM_CLASSES)
+        model = get_model(model_adi, num_classes=NUM_CLASSES)
 
     # Kayıtlı ağırlıkları yükle
     model_save_path = f"{MODEL_PATH}/{model_adi}.pth"
